@@ -62,7 +62,7 @@ void setupQuestions(std::unordered_map<int, std::vector<int>>* strandMap, std::u
 	standardMap->emplace(5, std5);
 	std::vector<int> std6;
 	std6.push_back(12);
-	standardMap->emplace(6, 12);
+	standardMap->emplace(6, std6);
 
 	std::vector<int> str1;
 	str1.push_back(1);
@@ -79,47 +79,67 @@ void setupQuestions(std::unordered_map<int, std::vector<int>>* strandMap, std::u
 std::vector<int> getQuestions(int numQuestions, std::unordered_map<int, std::vector<int>>* strandMap, std::unordered_map<int, std::vector<int>>* standardMap, std::unordered_map<int, float>* questionMap) {
 	std::vector<int> retQuestions;
 	std::unordered_map<int, int> standardRepeats;
+	standardRepeats.emplace(1, 0);
+	standardRepeats.emplace(2, 0);
+	standardRepeats.emplace(3, 0);
+	standardRepeats.emplace(4, 0);
+	standardRepeats.emplace(5, 0);
+	standardRepeats.emplace(6, 0);
 	bool strand = true;
 	for (int i = 0; i < numQuestions; ++i) {
 		int standardIndex = (i / 2) % 3;
+		std::vector<int> standards;
 		if (strand) {
-			std::vector<int> standards = (*strandMap)[1];
-			int standard = standards[standardIndex];
-			std::vector<int> questions = (*standardMap)[standard];
-			bool questionAdded = false;
-			while (!questionAdded) {
-				auto iter = questions.begin();
-				for (iter; iter != questions.end(); ++iter) {
-					bool repeatFound = false;
-					for (auto retIter = retQuestions.begin(); retIter != retQuestions.end(); ++retIter) {
-						if (*iter == *retIter) {
-							repeatFound == true;
-							break;
-						}
-					}
-					if (!repeatFound) {
-						retQuestions.push_back(*iter);
-						break;
+			standards = (*strandMap)[1];
+		}
+		else {
+			standards = (*strandMap)[2];
+		}
+		int standard = standards[standardIndex];
+		std::vector<int> questions = (*standardMap)[standard];
+		bool questionAdded = false;
+		while (!questionAdded) {
+			auto iter = questions.begin();
+			for (iter; iter != questions.end(); ++iter) {
+				int repeatFound = standardRepeats[standard];
+				for (auto retIter = retQuestions.begin(); retIter != retQuestions.end(); ++retIter) {
+					if (*iter == *retIter) {
+						repeatFound -= 1;
 					}
 				}
-				if (iter == questions.end()) {
-					if (standardRepeats.count(standard) == 0) {
-						standardRepeats[standard] = 1;
-					}
-					else {
-						++(standardRepeats[standard]);
-					}
+				if (repeatFound == 0) {
+					retQuestions.push_back(*iter);
+					questionAdded = true;
+					break;
+				}
+			}
+			if (iter == questions.end()) {
+				if (standardRepeats.count(standard) == 0) {
+					standardRepeats[standard] = 1;
+				}
+				else {
+					++(standardRepeats[standard]);
 				}
 			}
 		}
 	}
 
+	return retQuestions;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	std::unordered_map<int, std::vector<int>> strandMap;
+	std::unordered_map<int, std::vector<int>> standardMap;
+	std::unordered_map<int, float> questionMap;
+	setupQuestions(&strandMap, &standardMap, &questionMap);
 	int numQuestions = promptNumQuestions();
+	std::vector<int> questions = getQuestions(numQuestions, &strandMap, &standardMap, &questionMap);
 
+	std::cout << "You have question ids: ";
+	for (auto iter = questions.begin(); iter != questions.end(); ++iter) {
+		std::cout << *iter << ", ";
+	}
 
 	std::cin.clear();
 	std::cin.ignore(INT_MAX, '\n');
