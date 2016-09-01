@@ -122,6 +122,7 @@ std::vector<int> getQuestions(int numQuestions, std::unordered_map<int, std::vec
 				}
 			}
 		}
+		strand = !strand;
 	}
 
 	return retQuestions;
